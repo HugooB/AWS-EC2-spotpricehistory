@@ -22,7 +22,7 @@ def get_data():
 
 def load_data_txt(path):
     # Give column names
-    colums_names = ["Meuk", "Region", "InstanceType", "OS", "SpotPrice", "Time"]
+    colums_names = ["Info", "Region", "InstanceType", "OS", "SpotPrice", "Time"]
     # Read in the txt file
     print "Read in the file at " + str(path)
     df = pd.read_csv(path, sep="\t", decimal='.', names = colums_names)
