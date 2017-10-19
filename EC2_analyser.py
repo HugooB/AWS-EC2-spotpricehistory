@@ -69,7 +69,7 @@ def visualize_data_per_week(df, machine, number):
     plt.ylabel('Spot price')
     # plt.show()
     text = machine + "_week_" + str(number)
-    plt.savefig('D:/Hugo/Documents/GitHub/supercomputing_bigdata/Assignment2/Images/' + str('Plot of ') + "%s.png" % (text))
+    plt.savefig('Images/' + str('Plot of ') + "%s.png" % (text))
 
 def visualize_data_per_month(df, machine):
     # Define the different regions
@@ -88,7 +88,7 @@ def visualize_data_per_month(df, machine):
     # plt.show()
     text = machine + "_month_" + str(df.iloc[0]["Time"].strftime("%B"))
     print text
-    plt.savefig('D:/Hugo/Documents/GitHub/supercomputing_bigdata/Assignment2/Images/' + str('Plot of ') + "%s.png" % (text))
+    plt.savefig('Images/' + str('Plot of ') + "%s.png" % (text))
 
 def get_day_name(row):
     if row['DayofWeek'] == 0:
@@ -118,17 +118,8 @@ if __name__ == '__main__':
     else:
         print "Wrong answer, terminating"
 
+	######## DATA LOADING
     path = raw_input("Please enter the path of the .txt file you want to analyse: ")
-
-    ######## DATA LOADING
-    machines = ["m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "m4.16xlarge"]
-    file_m4large = "D:\Hugo\Documents\GitHub\supercomputing_bigdata\Assignment2\m4large.txt"
-    file_m4xlarge = "D:\Hugo\Documents\GitHub\supercomputing_bigdata\Assignment2\m4xlarge.txt"
-    file_m42xlarge = "D:\Hugo\Documents\GitHub\supercomputing_bigdata\Assignment2\m42xlarge.txt"
-    file_m44xlarge = "D:\Hugo\Documents\GitHub\supercomputing_bigdata\Assignment2\m44xlarge.txt"
-    file_m410xlarge = "D:\Hugo\Documents\GitHub\supercomputing_bigdata\Assignment2\m410xlarge.txt"
-    file_m416xlarge = "D:\Hugo\Documents\GitHub\supercomputing_bigdata\Assignment2\m416xlarge.txt"
-
     print "Loading data"
     data = load_data_txt(path)
     machine = data.iloc[0]["InstanceType"]
