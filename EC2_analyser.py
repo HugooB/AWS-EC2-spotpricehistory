@@ -113,12 +113,12 @@ if __name__ == '__main__':
     answer = raw_input("Is data already present? Typ Y/N ")
     if answer == "y" or answer == "Y":
         print "Perfect, let's use that data!"
-    elif answer == "n" | answer == "N":
+    elif answer == "n" or answer == "N":
         get_data()
     else:
         print "Wrong answer, terminating"
 
-	######## DATA LOADING
+    ######## DATA LOADING
     path = raw_input("Please enter the path of the .txt file you want to analyse: ")
     print "Loading data"
     data = load_data_txt(path)
