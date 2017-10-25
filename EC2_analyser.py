@@ -6,23 +6,42 @@ import numpy as np
 import subprocess
 
 def get_data():
+    # Change these dates to retrieve data from other timeframes
+    # Make sure the format is "YYYY-MM-DDTHH:MM:SS"
     start_time = "2017-09-17T00:00:00"
     end_time = "2017-10-17T00:00:00"
-    machines = ["m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "m4.16xlarge", "c4.large",
+    # Add more machine to this list if you like
+    instances = ["m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "m4.16xlarge", "c4.large",
                 "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge"]
 
     print "Started downloading historical EC2 data, this process could take a while"
-    for machine in machines:
-        print "Now downloading data for: " + str(machine)
-        cmd = "aws ec2 describe-spot-price-history --instance-types " +str(machine)+ " --start-time " +str(start_time)+ \
-              " --end-time " +str(end_time)+ " --output text > Data/" +str(machine)+ ".txt"
+    for instance in instances:
+        print "Now downloading data for: " + str(instance)
+        cmd = "aws ec2 describe-spot-price-history --instance-types " + str(instance) + " --start-time " + str(start_time) + \
+              " --end-time " + str(end_time) + " --output text > Data/" + str(instance) + ".txt"
         get = subprocess.call(cmd, shell=True, stdout=subprocess.PIPE)
         if get == 0:
-            print "Downloading of " + str(machine) + " data successful"
+            print "Downloading of " + str(instance) + " data successful"
+
+def get_day_name(row):
+    if row['DayofWeek'] == 0:
+        return "Monday"
+    elif row['DayofWeek'] == 1:
+        return "Tuesday"
+    elif row['DayofWeek'] == 2:
+        return "Wednesday"
+    elif row['DayofWeek'] == 3:
+        return "Thursday"
+    elif row['DayofWeek'] == 4:
+        return "Friday"
+    elif row['DayofWeek'] == 5:
+        return "Saturday"
+    elif row['DayofWeek'] == 6:
+        return "Sunday"
 
 def load_data_txt(path):
     # Give column names
-    colums_names = ["Info", "Region", "InstanceType", "OS", "SpotPrice", "Time"]
+    colums_names = ["Info", "VPC", "InstanceType", "OS", "SpotPrice", "Time"]
     # Read in the txt file
     print "Read in the file at " + str(path)
     df = pd.read_csv(path, sep="\t", decimal='.', names = colums_names)
@@ -42,25 +61,14 @@ def load_data_txt(path):
     df['DayNameofWeek'] = df.apply(lambda row: get_day_name(row), axis=1)
     return df
 
-def get_daily_averages(data):
-    mean = data.groupby(['DayNameofWeek']).mean()
-    mean = mean.iloc[:,0:1]
-    median = data.groupby(['DayNameofWeek']).median()
-    median = median.iloc[:,0:1]
-    min_val = data.groupby(['DayNameofWeek']).min(axis=1)
-    min_val = min_val.iloc[:,2:3]
-    max_val = data.groupby(['DayNameofWeek']).max(axis=1)
-    max_val = max_val.iloc[:,2:3]
-    return mean, median, min_val, max_val
-
 def visualize_data_per_week(df, machine, number):
-    # Define the different regions
-    regions = ["us-east-2a", "us-east-2b", "us-east-2c"]
+    # Define the different VPCs
+    vpcs = ["us-east-2a", "us-east-2b", "us-east-2c"]
     # Make a new figure
     plt.figure()
-    # Plot all regions in this figure
-    for region in regions:
-        subset = df[df.Region == region]
+    # Plot all VPCs in this figure
+    for vpc in vpcs:
+        subset = df[df.VPC == vpc]
         x = subset['Time']
         y = subset['SpotPrice']
         plt.plot(x, y, c=np.random.rand(3,))
@@ -69,16 +77,16 @@ def visualize_data_per_week(df, machine, number):
     plt.ylabel('Spot price')
     # plt.show()
     text = machine + "_week_" + str(number)
-    plt.savefig('Images/' + str('Plot of ') + "%s.png" % (text))
+    plt.savefig('/Images/' + str('Plot of ') + "%s.png" % (text))
 
 def visualize_data_per_month(df, machine):
-    # Define the different regions
-    regions = ["us-east-2a", "us-east-2b", "us-east-2c"]
+    # Define the different VPCs
+    vpcs = ["us-east-2a", "us-east-2b", "us-east-2c"]
     # Make a new figure
     plt.figure()
-    # Plot all regions in this figure
-    for region in regions:
-        subset = df[df.Region == region]
+    # Plot all VPCs in this figure
+    for vpc in vpcs:
+        subset = df[df.VPC == vpc]
         x = subset['Time']
         y = subset['SpotPrice']
         plt.plot(x, y, c=np.random.rand(3,))
@@ -88,23 +96,28 @@ def visualize_data_per_month(df, machine):
     # plt.show()
     text = machine + "_month_" + str(df.iloc[0]["Time"].strftime("%B"))
     print text
-    plt.savefig('Images/' + str('Plot of ') + "%s.png" % (text))
+    plt.savefig('/Images/' + str('Plot of ') + "%s.png" % (text))
 
-def get_day_name(row):
-    if row['DayofWeek'] == 0:
-        return "Monday"
-    elif row['DayofWeek'] == 1:
-        return "Tuesday"
-    elif row['DayofWeek'] == 2:
-        return "Wednesday"
-    elif row['DayofWeek'] == 3:
-        return "Thursday"
-    elif row['DayofWeek'] == 4:
-        return "Friday"
-    elif row['DayofWeek'] == 5:
-        return "Saturday"
-    elif row['DayofWeek'] == 6:
-        return "Sunday"
+def get_daily_averages(data):
+    # Group by day of the week and calculate means, median, min and max
+    mean = data.groupby(['DayNameofWeek']).mean().sort_values(['DayofWeek'])
+    # Delete first column for nice output
+    mean = mean.iloc[:,0:1]
+    median = data.groupby(['DayNameofWeek']).median().sort_values(['DayofWeek'])
+    median = median.iloc[:,0:1]
+    min_val = data.groupby(['DayNameofWeek']).min(axis=1).sort_values(['DayofWeek'])
+    min_val = min_val.iloc[:,2:3]
+    max_val = data.groupby(['DayNameofWeek']).max(axis=1).sort_values(['DayofWeek'])
+    max_val = max_val.iloc[:,2:3]
+    return mean, median, min_val, max_val
+
+def visualize_stats(df, type, machine):
+    plt.figure()
+    df.plot(kind='bar')
+    plt.xticks(rotation=20)
+    # plt.show()
+    text = "stats_" + machine + "_" + type
+    plt.savefig('/Images/' + str('Plot of ') + "%s.png" % (text))
 
 if __name__ == '__main__':
     print "Program started"
@@ -138,7 +151,7 @@ if __name__ == '__main__':
     i = 0
     for week in weeks:
         visualize_data_per_week(week, machine, i)
-        i = i+1
+        i = i + 1
 
     print "Visualize data for the whole month"
     visualize_data_per_month(data, machine)
@@ -159,4 +172,9 @@ if __name__ == '__main__':
     print max_val
     print "----------------------------------------------"
 
-    print "The End"
+    visualize_stats(mean, "mean", machine)
+    visualize_stats(median, "median", machine)
+    visualize_stats(min_val, "minimum", machine)
+    visualize_stats(max_val, "maximum", machine)
+
+    print "Program finished succesfully"
