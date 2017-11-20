@@ -17,9 +17,8 @@ def get_data():
     start_time = "2017-09-17T00:00:00"
     end_time = "2017-10-17T00:00:00"
     # Add more machine to this list if you like
-    # instances = ["m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "m4.16xlarge", "c4.large",
-    #             "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge"]
-    instances = ["m4.large"]
+    instances = ["m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "m4.16xlarge", "c4.large",
+                "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge"]
 
     print "Started downloading historical EC2 data, this process could take a while"
     for instance in instances:
